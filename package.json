@@ -9,6 +9,7 @@
     "build": "node build/build.js"
   },
   "dependencies": {
+    "exports-loader": "^0.6.4",
     "three": "^0.84.0",
     "tween.js": "^16.6.0",
     "vue": "^2.2.2",

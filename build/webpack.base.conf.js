@@ -9,7 +9,11 @@ function resolve (dir) {
 
 module.exports = {
   entry: {
-    app: './src/main.js'
+    app: './src/main.js',
+    // three: './src/assets/js/three.min.js',
+    // stats: './src/assets/js/stats.min.js',
+    // tween: './src/assets/js/tween.min.js',
+    // trackball: './src/assets/js/TrackballControls.js'
   },
   output: {
     path: config.build.assetsRoot,

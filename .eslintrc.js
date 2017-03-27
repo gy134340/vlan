@@ -8,6 +8,9 @@ module.exports = {
         "Vue": true,
         "VueRouter": true,
         "app": true,
+        "THREE": true,
+        "Stats": true,
+        "TWEEN":true
     },
     "extends": "eslint:recommended",
     "parserOptions": {

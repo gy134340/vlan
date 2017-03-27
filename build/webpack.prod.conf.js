@@ -53,6 +53,7 @@ var webpackConfig = merge(baseWebpackConfig, {
       filename: config.build.index,
       template: 'index.html',
       inject: true,
+      chunks:['three','tween','stats','trackball'],
       minify: {
         removeComments: true,
         collapseWhitespace: true,
