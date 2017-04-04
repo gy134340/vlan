@@ -122,6 +122,8 @@ var camera,scene,renderer,controls;
 var raycaster;			// 点击发出的一条射线
 var INTERSECTED;
 var mouse = new THREE.Vector2();	// 点向量
+var bundle = [];
+var threeObj = {};
 
 var winWidth = window.innerWidth;
 var winHeight = window.innerHeight;
@@ -186,7 +188,7 @@ function init () {
 
 	addParticles();
 
-	enableLink();
+	enableLink(bundle);
 
 	document.addEventListener( 'click', onDocumentEvent, false );
 }
@@ -215,32 +217,74 @@ function setName(name){
 function addParticles() {
 	
 	for (var i = 0, l = langObj.length; i < l; i++) {
+		var color = Math.random() * 0x808080 + 0x808080;
 		var spriteMaterial = new THREE.SpriteCanvasMaterial({
-			color: Math.random() * 0x808080 + 0x808080, program: programStroke
+			color: color, program: programStroke
 		});
 		var particle = new THREE.Sprite(spriteMaterial);
-		particle.scale.x = particle.scale.y = 12 + langObj[i].size * 1.5; 
+		particle.scale.x = particle.scale.y = 8 + langObj[i].size * 1; 
 
 		var theta = (Math.random() * 2 - 1) * Math.PI;
 		particle.position.x = Math.sin(theta) * Math.random() * 1000;
 		particle.position.y = Math.cos(theta) * Math.random() * 1000;
+		particle.userData = langObj[i];
+
+		var id = langObj[i].id;
+		threeObj[id] = particle;
 
 		if (langObj[i].size > 10) {		// @todo add name
 			var text = langObj[i].label;
 			var name = setName(text);
-			name.position.x = particle.position.x + 10;
-			name.position.y = particle.position.y - 3;
+			name.position.x = particle.position.x + 5 + langObj[i].size / 2;
+			name.position.y = particle.position.y - 5;
 			scene.add(name);
+			bundle.push(particle);		// add to 第一波
+			// enableLink(particle);
 		}
-
-		console.log(langObj[i]);
 		scene.add(particle);
 	}
+	// console.log('tt',threeObj);
 }
 
-function enableLink() {
+function enableLink(objs) {
 
-}
+	for (var i = 0, l = objs.length; i < l; i++) {
+		var obj = objs[i];
+		var influenced = obj.userData.influenced;
+
+		var SUBDIVISIONS = 50;
+		for (var k = 0, kl = influenced.length; k < kl; k++) {
+			var id = influenced[k].id;
+			// console.log('lal', threeObj[id]);
+			var child = threeObj[id];
+			var geometry = new THREE.Geometry();
+			var curve = new THREE.QuadraticBezierCurve3();
+			curve.v0 = new THREE.Vector3(child.position.x, child.position.y, 0);
+			curve.v1 = new THREE.Vector3((obj.position.x+child.position.x)/2 - 50, (obj.position.y+child.position.y)/2 + 50, 0);
+			curve.v2 = new THREE.Vector3(obj.position.x, obj.position.y, 0);
+			for (var j = 0; j < SUBDIVISIONS; j++) {
+				geometry.vertices.push( curve.getPoint(j / SUBDIVISIONS) );
+			}
+			
+			var material = new THREE.LineBasicMaterial( { color: obj.material.color, linewidth: 1 } );
+			var line = new THREE.Line(geometry, material);
+			scene.add(line);
+		}
+
+		// var geometry = new THREE.Geometry();
+		// var curve = new THREE.QuadraticBezierCurve3();
+		// curve.v0 = new THREE.Vector3(0, 0, 0);
+		// curve.v1 = new THREE.Vector3(obj.position.x / 2 - 100, obj.position.y/2 + 100, 0);
+		// curve.v2 = new THREE.Vector3(obj.position.x, obj.position.y, obj.position.z);
+		// for (var j = 0; j < SUBDIVISIONS; j++) {
+		// 	geometry.vertices.push( curve.getPoint(j / SUBDIVISIONS) );
+		// }
+
+		// var material = new THREE.LineBasicMaterial( { color: obj.material.color, linewidth: 1 } );
+		// var line = new THREE.Line(geometry, material);
+		// scene.add(line);
+	}
+}	
 
 function onDocumentEvent(event) {
 	event.preventDefault();
@@ -266,6 +310,7 @@ function onDocumentEvent(event) {
 function render() {
 	camera.lookAt(scene.position);
 	camera.updateProjectionMatrix();
+	renderer.setSize( window.innerWidth, window.innerHeight );	
 	renderer.render(scene, camera);
 }
 
