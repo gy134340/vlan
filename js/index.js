@@ -186,7 +186,30 @@ function init () {
 
 	addParticles();
 
+	enableLink();
+
 	document.addEventListener( 'click', onDocumentEvent, false );
+}
+
+function setName(name){
+	var c;
+	var material = new THREE.SpriteCanvasMaterial( {
+		color: new THREE.Color(0x000000),
+		program: function ( context ) {
+			context.font = '5px';
+			context.fillStyle = '#fff';
+			context.fillText(name, 0, 0);
+		},
+
+	} );
+
+	c = new THREE.Sprite( material );
+	c.position.normalize();
+	c.material.rotation = 0;
+	c.scale.x = c.scale.y = 2;
+
+	c.scale.y = - 2;
+	return c;
 }
 
 function addParticles() {
@@ -196,13 +219,27 @@ function addParticles() {
 			color: Math.random() * 0x808080 + 0x808080, program: programStroke
 		});
 		var particle = new THREE.Sprite(spriteMaterial);
-		particle.scale.x = particle.scale.y = 30;
+		particle.scale.x = particle.scale.y = 12 + langObj[i].size * 1.5; 
 
-		particle.position.x = Math.random() * 2000 - 1000;
-		particle.position.y = Math.random() * 2000 - 1000;
+		var theta = (Math.random() * 2 - 1) * Math.PI;
+		particle.position.x = Math.sin(theta) * Math.random() * 1000;
+		particle.position.y = Math.cos(theta) * Math.random() * 1000;
 
+		if (langObj[i].size > 10) {		// @todo add name
+			var text = langObj[i].label;
+			var name = setName(text);
+			name.position.x = particle.position.x + 10;
+			name.position.y = particle.position.y - 3;
+			scene.add(name);
+		}
+
+		console.log(langObj[i]);
 		scene.add(particle);
 	}
+}
+
+function enableLink() {
+
 }
 
 function onDocumentEvent(event) {
@@ -218,9 +255,10 @@ function onDocumentEvent(event) {
 	var intersects = raycaster.intersectObjects( scene.children );
 
 	if (intersects.length > 0) {
-		intersects[0].object.material.program = programFill;
+		var tmp = intersects[0].object;
+		tmp.material.program = programFill;
 		setTimeout(function() {
-			intersects[0].object.material.program = programStroke;
+			tmp.material.program = programStroke;
 		}, 3000);
 	}
 }
