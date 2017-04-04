@@ -3,9 +3,13 @@ var langObj;
 var paradigmObj;
 axios.get('./js/lib/data.json')
 	.then(function (res) {
-		langObj = res.data.langs;
-		paradigmObj = res.data.paradigms;	// 范例
+		langObj = res.data.langs;		// array
+		paradigmObj = res.data.paradigms;	// 范例 array
 		console.log('res',res);
+
+		// enable three.js
+		init();
+		animate();
 	})
 	.catch(function (error) {
 	});
@@ -108,8 +112,6 @@ var app = new Vue({
 }).$mount('#app');
 
 
-
-
 /********************************************************
 	three.js
 *********************************************************/
@@ -118,6 +120,7 @@ var container,stats;
 var canavs;
 var camera,scene,renderer,controls;
 var raycaster;			// 点击发出的一条射线
+var INTERSECTED;
 var mouse = new THREE.Vector2();	// 点向量
 
 var winWidth = window.innerWidth;
@@ -125,6 +128,19 @@ var winHeight = window.innerHeight;
 mouse.x = 0;
 mouse.y = 0;
 
+var PI2 = Math.PI * 2;
+var programFill = function(context) {
+	context.beginPath();
+	context.arc(0, 0, 0.5, 0, PI2, true);
+	context.fill();
+};
+
+var programStroke = function(context) {
+	context.lineWidth  = 0.04;
+	context.beginPath();
+	context.arc(0, 0, 0.5, 0, PI2, true);
+	context.stroke();
+};
 
 function init () {
 	container = document.querySelectorAll('.container')[0];
@@ -141,8 +157,9 @@ function init () {
 	scene.add(light);
 	
 	// renderer 
-	renderer = new THREE.WebGLRenderer( {antialias: true} );
-	renderer.setClearColor(0x45888A);
+	// renderer = new THREE.WebGLRenderer( {antialias: true} );
+	renderer = new THREE.CanvasRenderer();
+	renderer.setClearColor(0x000000);
 	renderer.setPixelRatio(window.devivePixelRatio);
 	renderer.setSize(window.innerWidth, window.innerHeight);
 	container.append(renderer.domElement);
@@ -163,10 +180,52 @@ function init () {
 	controls.staticMoving = true;
 	controls.dynamicDampingFactor = 0.3;
 
+	raycaster = new THREE.Raycaster();	// 射线
+
 	window.addEventListener( 'resize', onWindowResize, false );
+
+	addParticles();
+
+	document.addEventListener( 'click', onDocumentEvent, false );
 }
 
-function render(){
+function addParticles() {
+	
+	for (var i = 0, l = langObj.length; i < l; i++) {
+		var spriteMaterial = new THREE.SpriteCanvasMaterial({
+			color: Math.random() * 0x808080 + 0x808080, program: programStroke
+		});
+		var particle = new THREE.Sprite(spriteMaterial);
+		particle.scale.x = particle.scale.y = 30;
+
+		particle.position.x = Math.random() * 2000 - 1000;
+		particle.position.y = Math.random() * 2000 - 1000;
+
+		scene.add(particle);
+	}
+}
+
+function onDocumentEvent(event) {
+	event.preventDefault();
+	var eX = event.clientX || event.touches[0].pageX;
+	var eY = event.clientY || event.touches[0].pageY;
+	
+	mouse.x = ( eX / window.innerWidth ) * 2 - 1; 
+	mouse.y = - ( eY / window.innerHeight ) * 2 + 1;
+	mouse.z = 0.5 ;  // 这个是必要的，有时候还要设为1
+
+	raycaster.setFromCamera( mouse, camera );
+	var intersects = raycaster.intersectObjects( scene.children );
+
+	if (intersects.length > 0) {
+		intersects[0].object.material.program = programFill;
+		setTimeout(function() {
+			intersects[0].object.material.program = programStroke;
+		}, 3000);
+	}
+}
+
+function render() {
 	camera.lookAt(scene.position);
 	camera.updateProjectionMatrix();
 	renderer.render(scene, camera);
@@ -181,8 +240,8 @@ function animate () {
 	controls.update();
 }
 
-init();
-animate();
+// init();
+// animate();
 
 function onWindowResize(){
 
