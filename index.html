@@ -4,16 +4,62 @@
 	<meta charset="utf-8">
 	<title>vlan</title>
 	<link rel="stylesheet" href="css/reset.css">
+	<link rel="stylesheet" href="css/index.css">
   </head>
   <body>
 	<div id="app">
+		
+		<router-view></router-view>
+
+		<!-- three.js -->
 		<div class="container"></div>
 	</div>
-	<!-- built files will be auto injected -->
 	
+	<script type="text/x-template" id="header"></script>
+
+	<script type="text/x-template" id="bottom"></script>
+
+	<script type="text/x-template" id="intro">
+		<div class="intro">
+			<h3>Java</h3>
+			<div class="influence">
+				<h4>影响的语言</h4>
+				<div class="wrap">
+					<span>PHP</span>
+					<span>Cool</span>
+				</div>
+			</div>
+			<div class="influenced">
+				<h4>被影响的语言</h4>
+				<div class="wrap">
+					<span>C++</span>
+					<span>Ada</span>
+					<span>C--</span>
+				</div>
+			</div>
+		</div>
+	</script>
+
+
+	<script type="text/x-template" id="loading"></script>
+
+	<script type="text/x-template" id="index">
+		<div class="index content">
+			<my-header></my-header>
+			<my-bottom></my-bottom>
+			<my-intro></my-intro>
+		</div>
+	</script>
+
+
+
+
+
+
 	<script src="js/lib/vue.min.js"></script>
 	<script src="js/lib/vue-router.min.js"></script>
 	<script src="js/lib/vuex.js"></script>
+	<script src="js/lib/axios.min.js"></script>
 	<script src="js/lib/three.min.js"></script>
 	<script src="js/lib/tween.min.js"></script>
 	<script src="js/lib/TrackballControls.js"></script>

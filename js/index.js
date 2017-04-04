@@ -1,3 +1,119 @@
+
+var langObj;
+var paradigmObj;
+axios.get('./js/lib/data.json')
+	.then(function (res) {
+		langObj = res.data.langs;
+		paradigmObj = res.data.paradigms;	// 范例
+		console.log('res',res);
+	})
+	.catch(function (error) {
+	});
+
+
+/********************************************************
+		Vue.js
+*********************************************************/
+
+/**
+ * Components
+ */
+var header = Vue.extend({
+	template: '#header'
+});
+
+var bottom = Vue.extend({
+	template: '#bottom'
+});
+
+// @todo $route.params.id mounted get data
+var intro = Vue.extend({
+	template: '#intro'
+});
+
+/**
+ * Pages
+ */
+var loading = Vue.extend({
+	template: '#loading',
+	data: function() {
+		return {};
+	}
+});
+
+var index = Vue.extend({
+	template: '#index',
+	data: function() {
+		return {};
+	},
+	computed: {
+		count: function() {
+			return this.$store.state.count; 
+		}
+	},
+	mounted: function() {
+
+	},
+	methods: function() {
+
+	},
+	components:{
+		'my-header': header,
+		'my-bottom': bottom,
+		'my-intro': intro
+	}
+});
+
+var routes = [
+	{
+		path: '*',
+		component: index
+	},
+	{	
+		path: '/loading',
+		name: 'loading',
+		component: loading
+	},
+	{	
+		path: '/index/:name',
+		name: 'index',
+		component: index
+	}
+];
+// router.push({ name: 'user', params: { userId: 123 }}) 快速
+var router = new VueRouter({
+	routes
+});
+
+var store = new Vuex.Store({
+	state: {
+		count: 0
+	},
+	getters: {
+
+	},
+	mutations: {
+		increment: function(state) {
+			state.count++;
+		}
+	},
+	actions: {
+
+	}
+});
+
+var app = new Vue({
+	router,
+	store
+}).$mount('#app');
+
+
+
+
+/********************************************************
+	three.js
+*********************************************************/
+
 var container,stats;	
 var canavs;
 var camera,scene,renderer,controls;

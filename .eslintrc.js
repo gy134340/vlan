@@ -10,7 +10,9 @@ module.exports = {
         "app": true,
         "THREE": true,
         "Stats": true,
-        "TWEEN":true
+        "TWEEN": true,
+        "axios": true,
+        "Vuex": true
     },
     "extends": "eslint:recommended",
     "parserOptions": {
@@ -33,7 +35,7 @@ module.exports = {
             "error",
             "always"
         ],
-         // "no-console": "off",
+        "no-console": "off",
         "no-unused-vars": ["off", { "caughtErrors": "none" }]
     }
 };

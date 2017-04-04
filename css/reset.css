@@ -1,8 +1,10 @@
 body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,code,form,select,fieldset,legend,textarea,p,blockquote,th,td{
 	margin:0;
 	padding:0;
-	-webkit-user-select:none;
- 	-webkit-touch-callout:none;
+	-webkit-box-sizing: border-box;
+	box-sizing: border-box;
+	-webkit-user-select: none;
+ 	-webkit-touch-callout: none;
 }
 div{
 	-webkit-overflow-scrolling: touch;
@@ -13,7 +15,7 @@ div,a,img,select{
     -webkit-user-select: none;
     user-select:none;
 }
-body,html,#app, .container{
+body,html{
 	margin:0px;
 	padding:0px;
 	width:100%;
