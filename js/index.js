@@ -124,6 +124,8 @@ var INTERSECTED;
 var mouse = new THREE.Vector2();	// 点向量
 var bundle = [];
 var threeObj = {};
+var threeArray = [];
+var lineArray = [];
 
 var winWidth = window.innerWidth;
 var winHeight = window.innerHeight;
@@ -208,38 +210,40 @@ function setName(name){
 	c = new THREE.Sprite( material );
 	c.position.normalize();
 	c.material.rotation = 0;
-	c.scale.x = c.scale.y = 2;
+	c.scale.x = c.scale.y = 2.5;
 
-	c.scale.y = - 2;
+	c.scale.y = - 2.5;
 	return c;
 }
 
 function addParticles() {
 	
 	for (var i = 0, l = langObj.length; i < l; i++) {
-		var color = Math.random() * 0x808080 + 0x808080;
+		var color = Math.random() * 0xFFFFFF ;
 		var spriteMaterial = new THREE.SpriteCanvasMaterial({
-			color: color, program: programStroke
+			color: color, program: programFill
 		});
 		var particle = new THREE.Sprite(spriteMaterial);
 		particle.scale.x = particle.scale.y = 8 + langObj[i].size * 1; 
 
-		var theta = (Math.random() * 2 - 1) * Math.PI;
+		var theta = (Math.random() * 4 - 2) * Math.PI;
 		particle.position.x = Math.sin(theta) * Math.random() * 1000;
 		particle.position.y = Math.cos(theta) * Math.random() * 1000;
 		particle.userData = langObj[i];
 
 		var id = langObj[i].id;
 		threeObj[id] = particle;
+		threeArray.push(particle);
 
 		if (langObj[i].size > 10) {		// @todo add name
 			var text = langObj[i].label;
 			var name = setName(text);
 			name.position.x = particle.position.x + 5 + langObj[i].size / 2;
 			name.position.y = particle.position.y - 5;
+			name.position.z = 10;
+			name.userData = langObj[i];
 			scene.add(name);
 			bundle.push(particle);		// add to 第一波
-			// enableLink(particle);
 		}
 		scene.add(particle);
 	}
@@ -259,32 +263,61 @@ function enableLink(objs) {
 			var child = threeObj[id];
 			var geometry = new THREE.Geometry();
 			var curve = new THREE.QuadraticBezierCurve3();
+			var offsetX = sign((obj.position.x+child.position.x)/2) * 50;
+			var offsetY = sign((obj.position.y+child.position.y)/2) * 50;
 			curve.v0 = new THREE.Vector3(child.position.x, child.position.y, 0);
-			curve.v1 = new THREE.Vector3((obj.position.x+child.position.x)/2 - 50, (obj.position.y+child.position.y)/2 + 50, 0);
+			curve.v1 = new THREE.Vector3((obj.position.x+child.position.x)/2 + offsetX, (obj.position.y+child.position.y)/2 + offsetY, 0);
 			curve.v2 = new THREE.Vector3(obj.position.x, obj.position.y, 0);
 			for (var j = 0; j < SUBDIVISIONS; j++) {
 				geometry.vertices.push( curve.getPoint(j / SUBDIVISIONS) );
 			}
 			
-			var material = new THREE.LineBasicMaterial( { color: obj.material.color, linewidth: 1 } );
+			var material = new THREE.LineBasicMaterial( { color: obj.material.color, linewidth: 0.5 } );
 			var line = new THREE.Line(geometry, material);
+			lineArray.push(line);
 			scene.add(line);
 		}
-
-		// var geometry = new THREE.Geometry();
-		// var curve = new THREE.QuadraticBezierCurve3();
-		// curve.v0 = new THREE.Vector3(0, 0, 0);
-		// curve.v1 = new THREE.Vector3(obj.position.x / 2 - 100, obj.position.y/2 + 100, 0);
-		// curve.v2 = new THREE.Vector3(obj.position.x, obj.position.y, obj.position.z);
-		// for (var j = 0; j < SUBDIVISIONS; j++) {
-		// 	geometry.vertices.push( curve.getPoint(j / SUBDIVISIONS) );
-		// }
-
-		// var material = new THREE.LineBasicMaterial( { color: obj.material.color, linewidth: 1 } );
-		// var line = new THREE.Line(geometry, material);
-		// scene.add(line);
 	}
 }	
+
+function processClick(obj) {
+	var arr = getRelated(obj);
+	// var len = scene.children.length;
+	for (var i = 0, l = threeArray.length; i < l; i++) {
+		var tmp = threeArray[i];
+		if (tmp && tmp.userData) {
+			var id = tmp.userData.id;
+			if (arr.indexOf(id) === -1) {
+				// console.log(tmp);
+				scene.remove(tmp);
+			} else {
+				scene.add(tmp);
+			}
+		}
+	}
+
+	for (var j = 0; j < lineArray.length; j++) {
+		var tmpLine = lineArray[j];
+
+		scene.remove(tmpLine);
+	}
+
+	// console.log(threeObj,threeArray);
+}
+
+function getRelated(obj) {
+	var arr = [];
+	arr.push(obj.userData.id);
+	for (var i = 0, l = obj.userData.influenced.length; i < l; i++) {
+		var tmp = obj.userData.influenced[i].id;
+		arr.push(tmp);
+	}
+	for (var j = 0, jl = obj.userData.influencedby.length; j < jl; j++) {
+		var jTmp = obj.userData.influencedby[j].id;
+		arr.push(jTmp);
+	}
+	return arr;
+}
 
 function onDocumentEvent(event) {
 	event.preventDefault();
@@ -300,10 +333,14 @@ function onDocumentEvent(event) {
 
 	if (intersects.length > 0) {
 		var tmp = intersects[0].object;
-		tmp.material.program = programFill;
-		setTimeout(function() {
+		if(tmp.userData) {
 			tmp.material.program = programStroke;
-		}, 3000);
+			console.log('touch', tmp.userData);
+			processClick(tmp);
+			setTimeout(function() {
+				tmp.material.program = programFill;
+			}, 1000);
+		}
 	}
 }
 
@@ -332,4 +369,14 @@ function onWindowResize(){
 	camera.aspect = window.innerWidth / window.innerHeight;
 	camera.updateProjectionMatrix();
 	renderer.setSize( window.innerWidth, window.innerHeight );
+}
+
+// vender
+function sign(x) {
+	x = +x;
+	if (x === 0 || isNaN(x)) {
+		return x;
+	}
+
+	return x > 0 ? 1 : -1;
 }
