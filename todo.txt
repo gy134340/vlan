@@ -6,3 +6,5 @@
 右上角数据变化
 
 camera 远离靠近显示名字
+
+@todo enable vue

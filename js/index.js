@@ -107,8 +107,8 @@ var store = new Vuex.Store({
 });
 
 var app = new Vue({
-	router,
-	store
+	router: router,
+	store: store
 }).$mount('#app');
 
 
@@ -126,6 +126,7 @@ var bundle = [];
 var threeObj = {};
 var threeArray = [];
 var lineArray = [];
+var nameArray = [];
 
 var winWidth = window.innerWidth;
 var winHeight = window.innerHeight;
@@ -195,8 +196,9 @@ function init () {
 	document.addEventListener( 'click', onDocumentEvent, false );
 }
 
-function setName(name){
+function setName(obj){
 	var c;
+	var name = obj.userData.label;
 	var material = new THREE.SpriteCanvasMaterial( {
 		color: new THREE.Color(0x000000),
 		program: function ( context ) {
@@ -206,14 +208,40 @@ function setName(name){
 		},
 
 	} );
-
 	c = new THREE.Sprite( material );
 	c.position.normalize();
 	c.material.rotation = 0;
 	c.scale.x = c.scale.y = 2.5;
-
 	c.scale.y = - 2.5;
-	return c;
+	c.position.x = obj.position.x + 5 + obj.userData.size / 2;
+	c.position.y = obj.position.y - 5;
+	c.position.z = 10;
+	nameArray.push(c);
+	scene.add(c);
+}
+
+function setSubName(obj){
+	var c;
+	var name = obj.userData.label;
+	var material = new THREE.SpriteCanvasMaterial( {
+		color: new THREE.Color(0x000000),
+		program: function ( context ) {
+			context.font = '5px';
+			context.fillStyle = '#fff';
+			context.fillText(name, 0, 0);
+		},
+
+	} );
+	c = new THREE.Sprite( material );
+	c.position.normalize();
+	c.material.rotation = 0;
+	c.scale.x = c.scale.y = 1.2;
+	c.scale.y = - 1.2;
+	c.position.x = obj.position.x + 5 + obj.userData.size / 2;
+	c.position.y = obj.position.y - 5;
+	c.position.z = 10;
+	nameArray.push(c);
+	scene.add(c);
 }
 
 function addParticles() {
@@ -236,27 +264,24 @@ function addParticles() {
 		threeArray.push(particle);
 
 		if (langObj[i].size > 10) {		// @todo add name
-			var text = langObj[i].label;
-			var name = setName(text);
-			name.position.x = particle.position.x + 5 + langObj[i].size / 2;
-			name.position.y = particle.position.y - 5;
-			name.position.z = 10;
-			name.userData = langObj[i];
-			scene.add(name);
-			bundle.push(particle);		// add to 第一波
+			setName(particle);
+			bundle.push(particle);
 		}
 		scene.add(particle);
 	}
 	// console.log('tt',threeObj);
 }
 
+// before click only for bundle
 function enableLink(objs) {
+	linkInfluenced(objs);
+}
 
+function linkInfluenced(objs) {
 	for (var i = 0, l = objs.length; i < l; i++) {
 		var obj = objs[i];
 		var influenced = obj.userData.influenced;
 
-		var SUBDIVISIONS = 50;
 		for (var k = 0, kl = influenced.length; k < kl; k++) {
 			var id = influenced[k].id;
 			// console.log('lal', threeObj[id]);
@@ -268,8 +293,8 @@ function enableLink(objs) {
 			curve.v0 = new THREE.Vector3(child.position.x, child.position.y, 0);
 			curve.v1 = new THREE.Vector3((obj.position.x+child.position.x)/2 + offsetX, (obj.position.y+child.position.y)/2 + offsetY, 0);
 			curve.v2 = new THREE.Vector3(obj.position.x, obj.position.y, 0);
-			for (var j = 0; j < SUBDIVISIONS; j++) {
-				geometry.vertices.push( curve.getPoint(j / SUBDIVISIONS) );
+			for (var j = 0; j < 50; j++) {
+				geometry.vertices.push( curve.getPoint(j / 50) );
 			}
 			
 			var material = new THREE.LineBasicMaterial( { color: obj.material.color, linewidth: 0.5 } );
@@ -280,6 +305,66 @@ function enableLink(objs) {
 	}
 }	
 
+// clicked
+function enableSubLink(obj) {
+	linkSubInfluenced(obj);
+	linkSubInfluenedby(obj);
+}
+
+function linkSubInfluenedby(obj) {
+	var influencedby = obj.userData.influencedby;
+
+	for (var k = 0, kl = influencedby.length; k < kl; k++) {
+		var id = influencedby[k].id;
+		// console.log('lal', threeObj[id]);
+		var child = threeObj[id];
+		setSubName(child);
+		var geometry = new THREE.Geometry();
+		var curve = new THREE.QuadraticBezierCurve3();
+		var offsetX = sign((obj.position.x+child.position.x)/2) * 50;
+		var offsetY = sign((obj.position.y+child.position.y)/2) * 50;
+		curve.v0 = new THREE.Vector3(child.position.x, child.position.y, 0);
+		curve.v1 = new THREE.Vector3((obj.position.x+child.position.x)/2 + offsetX, (obj.position.y+child.position.y)/2 + offsetY, 0);
+		curve.v2 = new THREE.Vector3(obj.position.x, obj.position.y, 0);
+		for (var j = 0; j < 50; j++) {
+			geometry.vertices.push( curve.getPoint(j / 50) );
+		}
+		
+		var material = new THREE.LineBasicMaterial( { color: child.material.color, linewidth: 0.5 } );
+		var line = new THREE.Line(geometry, material);
+		lineArray.push(line);
+		scene.add(line);
+	}
+}
+
+function linkSubInfluenced(obj) {
+	var influenced = obj.userData.influenced;
+
+	for (var k = 0, kl = influenced.length; k < kl; k++) {
+		var id = influenced[k].id;
+		// console.log('lal', threeObj[id]);
+		var child = threeObj[id];
+		setSubName(child);
+		var geometry = new THREE.Geometry();
+		var curve = new THREE.QuadraticBezierCurve3();
+		var offsetX = sign((obj.position.x+child.position.x)/2) * 50;
+		var offsetY = sign((obj.position.y+child.position.y)/2) * 50;
+		curve.v0 = new THREE.Vector3(child.position.x, child.position.y, 0);
+		curve.v1 = new THREE.Vector3((obj.position.x+child.position.x)/2 + offsetX, (obj.position.y+child.position.y)/2 + offsetY, 0);
+		curve.v2 = new THREE.Vector3(obj.position.x, obj.position.y, 0);
+		for (var j = 0; j < 50; j++) {
+			geometry.vertices.push( curve.getPoint(j / 50) );
+		}
+		
+		var material = new THREE.LineBasicMaterial( { color: obj.material.color, linewidth: 0.5 } );
+		var line = new THREE.Line(geometry, material);
+		lineArray.push(line);
+		scene.add(line);
+	}
+}
+
+
+// 处理点击后的点，是子集
 function processClick(obj) {
 	var arr = getRelated(obj);
 	// var len = scene.children.length;
@@ -298,11 +383,26 @@ function processClick(obj) {
 
 	for (var j = 0; j < lineArray.length; j++) {
 		var tmpLine = lineArray[j];
-
+		// var tmpLine = lineArray.shift();
 		scene.remove(tmpLine);
 	}
+	lineArray.length = 0;
 
-	// console.log(threeObj,threeArray);
+	for (var k = 0; k < nameArray.length; k++ ) {
+		var tmpName = nameArray[k];
+		// var tmpName = nameArray.shift();
+		scene.remove(tmpName);
+	}
+	nameArray.length = 0;
+
+	addNameAndLine(obj);
+	
+}
+
+// 添加新的点击链接及影响链
+function addNameAndLine(obj) {
+	var name = setName(obj);
+	enableSubLink(obj);
 }
 
 function getRelated(obj) {
@@ -339,7 +439,7 @@ function onDocumentEvent(event) {
 			processClick(tmp);
 			setTimeout(function() {
 				tmp.material.program = programFill;
-			}, 1000);
+			}, 100);
 		}
 	}
 }
