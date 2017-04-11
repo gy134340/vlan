@@ -19,6 +19,8 @@ axios.get('./js/lib/data.json')
 		Vue.js
 *********************************************************/
 
+
+var VTHAT;
 /**
  * Components
  */
@@ -48,15 +50,32 @@ var loading = Vue.extend({
 var index = Vue.extend({
 	template: '#index',
 	data: function() {
-		return {};
+		return {
+			selected: {
+				proData: ''
+			}
+		};
 	},
 	computed: {
 		count: function() {
 			return this.$store.state.count; 
+		},
+		influenced: function() {
+			var tmp = this.selected.proData.influenced;
+			if(tmp && tmp.length > 0) {
+				return tmp;
+			}
+		},
+		influencedby: function() {
+			var tmp = this.selected.proData.influenced;
+			if(tmp && tmp.length > 0) {
+				return tmp;
+			}
 		}
 	},
 	mounted: function() {
-
+		VTHAT = this;
+		document.addEventListener( 'click', onDocumentEvent, false );
 	},
 	methods: function() {
 
@@ -193,7 +212,7 @@ function init () {
 
 	enableLink(bundle);
 
-	document.addEventListener( 'click', onDocumentEvent, false );
+	// document.addEventListener( 'click', onDocumentEvent, false );
 }
 
 function setName(obj){
@@ -235,8 +254,8 @@ function setSubName(obj){
 	c = new THREE.Sprite( material );
 	c.position.normalize();
 	c.material.rotation = 0;
-	c.scale.x = c.scale.y = 1.2;
-	c.scale.y = - 1.2;
+	c.scale.x = c.scale.y = 1.5;
+	c.scale.y = - 1.5;
 	c.position.x = obj.position.x + 5 + obj.userData.size / 2;
 	c.position.y = obj.position.y - 5;
 	c.position.z = 10;
@@ -419,7 +438,7 @@ function getRelated(obj) {
 	return arr;
 }
 
-function onDocumentEvent(event) {
+function onDocumentEvent(event, that) {
 	event.preventDefault();
 	var eX = event.clientX || event.touches[0].pageX;
 	var eY = event.clientY || event.touches[0].pageY;
@@ -436,6 +455,7 @@ function onDocumentEvent(event) {
 		if(tmp.userData) {
 			tmp.material.program = programStroke;
 			console.log('touch', tmp.userData);
+			VTHAT.selected.proData = tmp.userData;		// link to Vue 
 			processClick(tmp);
 			setTimeout(function() {
 				tmp.material.program = programFill;

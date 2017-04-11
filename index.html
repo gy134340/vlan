@@ -19,7 +19,7 @@
 
 	<script type="text/x-template" id="bottom"></script>
 
-	<script type="text/x-template" id="intro">
+	<!-- <script type="text/x-template" id="intro">
 		<div class="intro">
 			<h3>Java</h3>
 			<div class="influence">
@@ -34,11 +34,12 @@
 				<div class="wrap">
 					<span>C++</span>
 					<span>Ada</span>
-					<span>C--</span>
+					<span>{{selected.proData}}</span>
+					<span>C</span>
 				</div>
 			</div>
 		</div>
-	</script>
+	</script> -->
 
 
 	<script type="text/x-template" id="loading"></script>
@@ -47,7 +48,22 @@
 		<div class="index content">
 			<my-header></my-header>
 			<my-bottom></my-bottom>
-			<my-intro></my-intro>
+			<div v-if="selected.proData" class="intro">
+				<h2 v-if="selected.proData.label">{{selected.proData.label}}</h2>
+				<div class="influence subsub">
+					<h4>影响的语言</h4>
+					<div class="wrap">
+						<span v-for="item in influenced">{{item.name}}</span>
+					</div>
+				</div>
+				<div class="influenced subsub">
+					<h4>被影响的语言</h4>
+					<div class="wrap">
+						<span v-for="item in influencedby">{{item.name}}</span>
+						
+					</div>
+				</div>
+			</div>
 		</div>
 	</script>
 

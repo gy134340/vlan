@@ -9,21 +9,42 @@
 	position: absolute;
 	width: 100%;
 	height: 100%;
+	overflow: hidden;
 	left: 0;
 	top: 0;
 }
 .content {
 	position: absolute;
-	width: auto;
+	width: 250px;
+	border-radius: 5px;
 	height: auto;
+	max-height: 400px;
+	overflow: scroll;
 	right: 10px;
 	top: 10px;
 	z-index: 9;
+	/*-webkit-box-sizing: border-box;
+	box-sizing: border-box;*/
+	/*padding: 10px;*/
+	background-color: #ccc;
 }
 .intro {
 	display: inline-block;
 	position: relative;
 	z-index: 9;
-	padding: 80px;
-	background-color: #ccc;
+	padding: 10px;
+	/*padding: 10px 20px;*/
+}
+.intro .wrap span {
+	font-size: 12px;
+	-webkit-box-sizing: border-box;
+	box-sizing: border-box;
+	padding: 0px 4px;
+	display: inline-block;
+}
+.intro h2 {
+	line-height: 28px;
+}
+.intro .subsub {
+	padding: 10px 0 0 0;
 }
