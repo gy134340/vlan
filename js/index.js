@@ -1,11 +1,20 @@
 
 var langObj;
+var app;
 var paradigmObj;
 axios.get('./js/lib/data.json')
 	.then(function (res) {
 		langObj = res.data.langs;		// array
 		paradigmObj = res.data.paradigms;	// 范例 array
 		console.log('res',res);
+
+		// init();
+		// animate();
+		app = new Vue({
+			router: router,
+			store: store
+		}).$mount('#app');
+		router.replace('/index');
 
 		// enable three.js
 		init();
@@ -53,7 +62,8 @@ var index = Vue.extend({
 		return {
 			selected: {
 				proData: ''
-			}
+			},
+			langObj: langObj,
 		};
 	},
 	computed: {
@@ -74,11 +84,41 @@ var index = Vue.extend({
 		}
 	},
 	mounted: function() {
-		VTHAT = this;
+		// VTHAT = this;
+		// console.log('tt',this.$route.params.id);
+		// if(this.$route.params.id) {
+		// 	var tmpData = this.langObj[this.$route.params.id];
+		// 	this.selected.proData = tmpData;
+		// } else {
+		var tmp = this.langObj[1];
+		this.selected.proData = tmp;
+		// }
+		
 		document.addEventListener( 'click', onDocumentEvent, false );
 	},
-	methods: function() {
-
+	watch: {
+		$route: function(to, from) {
+			if(this.$route.params.id) {
+				var tmpData = this.langObj[this.$route.params.id];
+				this.selected.proData = tmpData;
+			} else {
+				var tmp = this.langObj[1];
+				this.selected.proData = tmp;
+			}
+		}
+	},
+	methods: {
+		itemGo: function(event) {
+			var item = event.target.getAttribute('value');
+			var particle = threeObj[item];
+			var number = particle.userData.index;
+			// console.log('id',number);
+			router.push({ name: 'index', params: { id: number }});
+			processClick(particle);
+			setTimeout(function() {
+				particle.material.program = programFill;
+			}, 100);
+		}
 	},
 	components:{
 		'my-header': header,
@@ -98,14 +138,14 @@ var routes = [
 		component: loading
 	},
 	{	
-		path: '/index/:name',
+		path: '/index/:id',
 		name: 'index',
 		component: index
 	}
 ];
 // router.push({ name: 'user', params: { userId: 123 }}) 快速
 var router = new VueRouter({
-	routes
+	routes: routes
 });
 
 var store = new Vuex.Store({
@@ -125,12 +165,12 @@ var store = new Vuex.Store({
 	}
 });
 
-var app = new Vue({
-	router: router,
-	store: store
-}).$mount('#app');
+// new Vue({
+// 	router: router,
+// 	store: store
+// }).$mount('#app');
 
-
+// router.replace('/index');
 /********************************************************
 	three.js
 *********************************************************/
@@ -241,7 +281,7 @@ function setName(obj){
 
 function setSubName(obj){
 	var c;
-	var name = obj.userData.label;
+	var name = obj.userData.label || 'null';
 	var material = new THREE.SpriteCanvasMaterial( {
 		color: new THREE.Color(0x000000),
 		program: function ( context ) {
@@ -455,7 +495,9 @@ function onDocumentEvent(event, that) {
 		if(tmp.userData) {
 			tmp.material.program = programStroke;
 			console.log('touch', tmp.userData);
-			VTHAT.selected.proData = tmp.userData;		// link to Vue 
+			// VTHAT.selected.proData = tmp.userData;		// link to Vue 
+			var id = tmp.userData.index;
+			router.push({ name: 'index', params: { id: id }});
 			processClick(tmp);
 			setTimeout(function() {
 				tmp.material.program = programFill;

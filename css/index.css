@@ -36,11 +36,16 @@
 	/*padding: 10px 20px;*/
 }
 .intro .wrap span {
+	cursor: pointer;
 	font-size: 12px;
 	-webkit-box-sizing: border-box;
 	box-sizing: border-box;
 	padding: 0px 4px;
 	display: inline-block;
+	border-bottom: 1px solid #ccc;
+}
+.intro .wrap span:hover {
+	border-bottom: 2px solid #00838B;
 }
 .intro h2 {
 	line-height: 28px;

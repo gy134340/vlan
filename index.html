@@ -53,14 +53,13 @@
 				<div class="influence subsub">
 					<h4>影响的语言</h4>
 					<div class="wrap">
-						<span v-for="item in influenced">{{item.name}}</span>
+						<span v-for="item in influenced" v-on:click.prevent.stop="itemGo" v-bind:value="item.id">{{item.name}}</span>
 					</div>
 				</div>
 				<div class="influenced subsub">
 					<h4>被影响的语言</h4>
 					<div class="wrap">
-						<span v-for="item in influencedby">{{item.name}}</span>
-						
+						<span v-for="item in influencedby" v-on:click.prevent.stop="itemGo" v-bind:value="item.id">{{item.name}}</span>
 					</div>
 				</div>
 			</div>
